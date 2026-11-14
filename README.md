@@ -3,7 +3,7 @@ Intelligent Drone Route Optimization Using Genetic Algorithms
 
 ## Run locally
 
-On Windows, run `start-aeroroute.bat` from the repository root. It checks the required tools, installs frontend packages if needed, and opens backend and frontend in separate terminal windows. Install the Python backend requirements once before using the launcher.
+On Windows, run `start.bat` from the repository root. It checks the required tools, installs frontend packages if needed, and opens backend and frontend in separate terminal windows. Install the Python backend requirements once before using the launcher.
 
 Start the FastAPI backend from `backend`:
 
