@@ -21,7 +21,9 @@ import {
   Activity
 } from "lucide-react";
 import "leaflet/dist/leaflet.css";
+import { planeIconMarkup } from "../mapIcons.js";
 import "./LiveFlightSimulation.css";
+import { monitorMission } from "../api.js";
 
 function normalizePoint(point) {
   if (Array.isArray(point) && point.length >= 2) {
@@ -110,9 +112,9 @@ function RouteBounds({ points }) {
 
 const droneIcon = L.divIcon({
   className: "simulation-drone-icon",
-  html: '<div class="simulation-drone-marker">✈</div>',
-  iconSize: [38, 38],
-  iconAnchor: [19, 19]
+  html: `<div class="simulation-drone-marker">${planeIconMarkup(18)}</div>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16]
 });
 
 export default function LiveFlightSimulation({
@@ -124,6 +126,8 @@ export default function LiveFlightSimulation({
   const [isRunning, setIsRunning] = useState(false);
   const [status, setStatus] = useState("READY");
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const [monitorStatus, setMonitorStatus] = useState(null);
+  const [monitorError, setMonitorError] = useState("");
 
   const routePoints = useMemo(
     () => waypoints.map(normalizePoint).filter(Boolean),
@@ -176,6 +180,20 @@ export default function LiveFlightSimulation({
       setStatus("BATTERY DEPLETED");
     }
   }, [battery, isRunning]);
+
+  useEffect(() => {
+    if (routePoints.length < 2 || status === "READY" || status === "ADD WAYPOINTS") return;
+    const timer = setTimeout(() => {
+      monitorMission({
+        route: routePoints.map(([lat, lon]) => ({ lat, lon })),
+        current_position: { lat: dronePosition[0], lon: dronePosition[1] },
+        battery_percentage: battery,
+        mission_status: status === "COMPLETED" ? "completed" : status.toLowerCase().replaceAll(" ", "_"),
+        completed_waypoints: Math.min(routePoints.length, Math.floor(progress * routePoints.length))
+      }).then(setMonitorStatus).catch((error) => setMonitorError(error.message));
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [routePoints, dronePosition, battery, status, progress]);
 
   function startSimulation() {
     if (routePoints.length < 2) {
@@ -412,6 +430,8 @@ export default function LiveFlightSimulation({
               or provide real-time aircraft telemetry.
             </p>
           </div>
+          {monitorStatus && <div className="simulation-warning"><Activity size={17} /><p>Backend monitor: {monitorStatus.status} · {monitorStatus.progress_percentage}% route progress · {monitorStatus.distance_from_nearest_waypoint_km} km from nearest waypoint.</p></div>}
+          {monitorError && <div className="simulation-warning" role="status"><Activity size={17} /><p>Backend monitor unavailable: {monitorError}</p></div>}
         </aside>
       </div>
     </section>
