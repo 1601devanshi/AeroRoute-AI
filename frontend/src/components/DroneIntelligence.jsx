@@ -277,100 +277,35 @@ export default function DroneIntelligence({
         <Activity size={24} />
       </div>
 
-      {/* INPUT CONTROLS */}
-    
-<div
-  className="intelligence-controls"
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: "16px",
-    margin: "24px 0",
-    padding: "20px",
-    background: "#111d2b",
-    border: "1px solid #26394d",
-    borderRadius: "12px"
-  }}
->
-  <label style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-    Selected drone
-    <strong>{selectedDrone?.name || "No drone selected"}</strong>
-  </label>
-
-  <label style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-    Payload (kg)
-    <input type="number" min="0" step="0.1" value={payload}
-      onChange={(e) => setPayload(e.target.value)} />
-  </label>
-
-  <label style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-    Wind speed (km/h)
-    <input type="number" min="0" step="0.5" value={wind}
-      onChange={(e) => setWind(e.target.value)} />
-  </label>
-
-  <label style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-    Battery remaining (%)
-    <input type="number" min="0" max="100" value={battery}
-      onChange={(e) => setBattery(e.target.value)} />
-  </label>
-
-  <label style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "12px" }}>
-    GNSS available
-    <input type="checkbox" checked={gpsAvailable}
-      onChange={(e) => setGpsAvailable(e.target.checked)} />
-  </label>
-
-
+      <div className="intelligence-controls">
         <label>
-          Selected drone
-          <strong>
-            {selectedDrone?.name || "No drone selected"}
-          </strong>
+          <span>Selected drone</span>
+          <strong>{selectedDrone?.name || "No drone selected"}</strong>
         </label>
 
         <label>
-          Payload (kg)
-          <input
-            type="number"
-            min="0"
-            step="0.1"
-            value={payload}
-            onChange={(e) => setPayload(e.target.value)}
-          />
+          <span>Payload (kg)</span>
+          <input type="number" min="0" step="0.1" value={payload}
+            onChange={(event) => setPayload(event.target.value)} />
         </label>
 
         <label>
-          Wind speed (km/h)
-          <input
-            type="number"
-            min="0"
-            step="0.5"
-            value={wind}
-            onChange={(e) => setWind(e.target.value)}
-          />
+          <span>Wind speed (km/h)</span>
+          <input type="number" min="0" step="0.5" value={wind}
+            onChange={(event) => setWind(event.target.value)} />
         </label>
 
         <label>
-          Battery remaining (%)
-          <input
-            type="number"
-            min="0"
-            max="100"
-            value={battery}
-            onChange={(e) => setBattery(e.target.value)}
-          />
+          <span>Battery remaining (%)</span>
+          <input type="number" min="0" max="100" value={battery}
+            onChange={(event) => setBattery(event.target.value)} />
         </label>
 
         <label className="intelligence-toggle">
-          GNSS available
-          <input
-            type="checkbox"
-            checked={gpsAvailable}
-            onChange={(e) => setGpsAvailable(e.target.checked)}
-          />
+          <span>GNSS available</span>
+          <input type="checkbox" checked={gpsAvailable}
+            onChange={(event) => setGpsAvailable(event.target.checked)} />
         </label>
-
       </div>
 
       {/* RUN ASSESSMENT */}
