@@ -1,0 +1,352 @@
+
+.live-simulation {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  color: #e8eef8;
+}
+
+.simulation-heading,
+.simulation-map-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.simulation-eyebrow {
+  color: #22d3ee;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.simulation-heading h2 {
+  margin: 7px 0;
+  font-size: 25px;
+}
+
+.simulation-heading p,
+.simulation-map-heading small {
+  color: #94a3b8;
+  margin: 0;
+  font-size: 13px;
+}
+
+.simulation-status,
+.map-live-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #334155;
+  border-radius: 30px;
+  padding: 8px 12px;
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748b;
+  display: inline-block;
+}
+
+.simulation-status.in-flight .status-dot,
+.map-live-label .status-dot {
+  background: #22d3ee;
+  box-shadow: 0 0 10px #22d3ee;
+}
+
+.simulation-status.completed .status-dot {
+  background: #4ade80;
+}
+
+.simulation-status.emergency-stop .status-dot,
+.simulation-status.battery-depleted .status-dot {
+  background: #f87171;
+}
+
+.simulation-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.simulation-metric,
+.simulation-map-panel,
+.simulation-control-panel {
+  background: #111c2d;
+  border: 1px solid #26364d;
+  border-radius: 15px;
+}
+
+.simulation-metric {
+  padding: 16px;
+  min-width: 0;
+}
+
+.simulation-metric > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.simulation-metric strong {
+  display: block;
+  margin: 12px 0 5px;
+  font-size: 24px;
+  color: #f8fafc;
+}
+
+.simulation-metric small {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.metric-progress {
+  height: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #26364d;
+}
+
+.metric-progress > div {
+  height: 100%;
+  border-radius: inherit;
+  background: #22d3ee;
+  transition: width 0.2s ease;
+}
+
+.metric-progress > div.battery-low {
+  background: #f87171;
+}
+
+.simulation-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.simulation-map-panel {
+  overflow: hidden;
+  min-width: 0;
+}
+
+.simulation-map-heading {
+  padding: 16px 18px;
+}
+
+.simulation-map-heading strong,
+.simulation-map-heading small {
+  display: block;
+}
+
+.simulation-map-heading small {
+  margin-top: 5px;
+}
+
+.simulation-map {
+  height: 440px;
+  background: #0b1524;
+}
+
+.simulation-leaflet-map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.simulation-map-empty {
+  padding: 12px 16px;
+  color: #fbbf24;
+  background: #332713;
+  font-size: 12px;
+}
+
+.simulation-drone-icon {
+  background: transparent;
+  border: 0;
+}
+
+.simulation-drone-marker {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: #07111f;
+  background: #22d3ee;
+  border: 3px solid #e0f2fe;
+  border-radius: 50%;
+  font-size: 19px;
+  box-shadow: 0 0 18px #22d3ee;
+}
+
+.simulation-control-panel {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.simulation-control-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #22d3ee;
+}
+
+.simulation-control-title strong {
+  color: #f8fafc;
+}
+
+.simulation-drone-info {
+  padding: 14px;
+  border-radius: 11px;
+  background: #17263a;
+}
+
+.simulation-drone-info span,
+.simulation-drone-info strong,
+.simulation-drone-info small {
+  display: block;
+}
+
+.simulation-drone-info span {
+  color: #22d3ee;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.simulation-drone-info strong {
+  margin: 8px 0 5px;
+  font-size: 15px;
+}
+
+.simulation-drone-info small {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.simulation-speed-label {
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.simulation-control-panel select {
+  width: 100%;
+  padding: 11px;
+  color: #e2e8f0;
+  background: #0b1524;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.simulation-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.simulation-button {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 0;
+  border-radius: 9px;
+  color: #07111f;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.simulation-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.simulation-start {
+  background: #22d3ee;
+}
+
+.simulation-pause {
+  background: #fbbf24;
+}
+
+.simulation-reset {
+  color: #e2e8f0;
+  background: #334155;
+}
+
+.simulation-emergency {
+  color: white;
+  background: #dc2626;
+}
+
+.simulation-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px;
+  color: #fbbf24;
+  background: #332713;
+  border: 1px solid #6b4c1d;
+  border-radius: 9px;
+}
+
+.simulation-warning svg {
+  flex-shrink: 0;
+}
+
+.simulation-warning p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1000px) {
+  .simulation-main {
+    grid-template-columns: 1fr;
+  }
+
+  .simulation-control-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .simulation-control-title,
+  .simulation-warning {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 650px) {
+  .simulation-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .simulation-control-panel {
+    display: flex;
+  }
+
+  .simulation-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .simulation-map {
+    height: 330px;
+  }
+}
