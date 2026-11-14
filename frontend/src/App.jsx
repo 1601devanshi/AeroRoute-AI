@@ -34,7 +34,6 @@ import {
   ShieldAlert,
   ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
   Thermometer,
   Timer,
   Trash2,
@@ -58,6 +57,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import RouteOptimization from "./RouteOptimization";
+import { planeIconMarkup } from "./mapIcons.js";
 import DroneFleet from "./components/DroneFleet";
 import DroneIntelligence from "./components/DroneIntelligence";
 import LiveFlightSimulation from "./components/LiveFlightSimulation";
@@ -66,7 +66,10 @@ import {
   checkBackendHealth,
   getCurrentWeather,
   getDemoNoFlyZones,
-  getRouteWeather
+  getRouteWeather,
+  listMissions,
+  saveMission as persistMission,
+  assessMission
 } from "./api.js";
 
 import "./App.css";
@@ -85,7 +88,7 @@ const NAV_GROUPS = [
       ["Command Centre", Gauge],
       ["Drone Fleet", Plane],
       ["Mission Planner", MapIcon],
-      ["AI Route Optimizer", Sparkles],
+      ["AI Route Optimizer", Route],
       ["Live Operations", Radio]
     ]
   },
@@ -184,9 +187,9 @@ const PAGE_META = {
 
 const droneMarker = L.divIcon({
   className: "ar-drone-marker",
-  html: '<div class="ar-drone-marker-core"><span></span></div>',
-  iconSize: [30, 30],
-  iconAnchor: [15, 15]
+  html: `<div class="ar-drone-marker-core">${planeIconMarkup(18)}</div>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16]
 });
 
 const waypointIcon = (number) =>
@@ -737,7 +740,7 @@ function CommandCentre({
             </button>
 
             <button onClick={() => onNavigate("AI Route Optimizer")}>
-              <Sparkles size={16} />
+              <Route size={16} />
               <span>Optimize route</span>
               <ChevronRight size={14} />
             </button>
@@ -912,13 +915,17 @@ function CommandCentre({
 function MissionPlanner({
   waypoints,
   setWaypoints,
+  missionName,
+  setMissionName,
+  selectedDrone,
+  missionAssessment,
+  setMissionAssessment,
   noFlyZones,
   onNavigate
 }) {
   const [coordinate, setCoordinate] = useState("");
-  const [missionName, setMissionName] = useState(
-    "Jaipur Survey Mission"
-  );
+  const [assessmentLoading, setAssessmentLoading] = useState(false);
+  const [assessmentError, setAssessmentError] = useState("");
 
   const distance = routeDistance(waypoints);
 
@@ -940,6 +947,25 @@ function MissionPlanner({
     setCoordinate("");
   };
 
+  const runAssessment = async () => {
+    if (!selectedDrone || waypoints.length < 2) return;
+    setAssessmentLoading(true);
+    setAssessmentError("");
+    try {
+      const result = await assessMission({
+        waypoints: waypoints.map(([lat, lon]) => ({ lat, lon })),
+        drone_id: selectedDrone.id,
+        payload_kg: 0,
+        reserve_percentage: 20
+      });
+      setMissionAssessment(result);
+    } catch (error) {
+      setAssessmentError(error.message || "Mission assessment failed.");
+    } finally {
+      setAssessmentLoading(false);
+    }
+  };
+
   return (
     <div className="page-stack">
       <SectionHeading
@@ -952,7 +978,7 @@ function MissionPlanner({
             onClick={() => onNavigate("AI Route Optimizer")}
             disabled={waypoints.length < 2}
           >
-            <Sparkles size={16} />
+            <Route size={16} />
             Optimize mission
           </button>
         }
@@ -1135,9 +1161,16 @@ function MissionPlanner({
             disabled={waypoints.length < 2}
             onClick={() => onNavigate("AI Route Optimizer")}
           >
-            <Sparkles size={16} />
+            <Route size={16} />
             Continue to optimization
           </button>
+
+          <button className="btn-outline full-width" disabled={!selectedDrone || waypoints.length < 2 || assessmentLoading} onClick={runAssessment}>
+            {assessmentLoading ? "Assessing mission…" : "Assess with selected drone"}
+          </button>
+
+          {assessmentError && <p className="inline-alert" role="alert">{assessmentError}</p>}
+          {missionAssessment && <p className="field-hint">Backend assessment: {missionAssessment.mission_status} · {missionAssessment.distance_km} km · {missionAssessment.battery_analysis?.estimated_energy_wh} Wh estimated. Simulation estimate only.</p>}
 
           <p className="field-hint">
             Mission name: {missionName || "Unnamed mission"}.
@@ -1771,7 +1804,7 @@ function AnalyticsPage({
 
             <div>
               <span>Persistence</span>
-              <strong>Session only</strong>
+              <strong>Backend SQLite</strong>
             </div>
           </div>
         </section>
@@ -1784,13 +1817,13 @@ function AnalyticsPage({
    MISSION HISTORY
 ========================================================= */
 
-function MissionHistory({ records, onSave }) {
+function MissionHistory({ records, onSave, error }) {
   return (
     <div className="page-stack">
       <SectionHeading
         eyebrow="MISSION RECORDS"
         title="Mission History"
-        description="Mission snapshots saved in this browser session. Backend persistence is a later phase."
+        description="Mission plans and assessments saved in the connected backend store."
         action={
           <button
             className="btn-primary"
@@ -1801,6 +1834,8 @@ function MissionHistory({ records, onSave }) {
           </button>
         }
       />
+
+      {error && <div className="inline-alert" role="alert">{error}</div>}
 
       {records.length ? (
         <section className="panel history-list">
@@ -1816,19 +1851,19 @@ function MissionHistory({ records, onSave }) {
               <div className="history-copy">
                 <strong>{record.name}</strong>
                 <small>
-                  {record.date} · {record.waypoints} waypoints
+                  {record.created_at ? new Date(record.created_at).toLocaleString() : record.date} · {Array.isArray(record.waypoints) ? record.waypoints.length : record.waypoints} waypoints{record.drone_name ? ` · ${record.drone_name}` : ""}
                 </small>
               </div>
 
               <div className="history-distance">
                 <strong>
-                  {record.distance.toFixed(2)} km
+                  {Number(record.distance_km ?? record.distance ?? 0).toFixed(2)} km
                 </strong>
                 <small>Route estimate</small>
               </div>
 
               <StatusPill tone="blue">
-                Session record
+                {record.status || "planned"}
               </StatusPill>
             </div>
           ))}
@@ -1989,6 +2024,9 @@ export default function App() {
     useState("idle");
 
   const [records, setRecords] = useState([]);
+  const [missionName, setMissionName] = useState("Jaipur Survey Mission");
+  const [missionAssessment, setMissionAssessment] = useState(null);
+  const [missionSaveError, setMissionSaveError] = useState("");
 
   const [notificationsOpen, setNotificationsOpen] =
     useState(false);
@@ -2056,27 +2094,39 @@ export default function App() {
   useEffect(() => {
     checkHealth();
     refreshZones();
+    listMissions().then((data) => setRecords(data.missions || [])).catch(() => {});
   }, [checkHealth, refreshZones]);
 
   /* ---------------- SAVE MISSION ---------------- */
 
-  const saveMission = useCallback(() => {
+  const saveMission = useCallback(async () => {
     if (waypoints.length < 2) return;
-
-    const record = {
-      id: `${Date.now()}`,
-      name: `Mission ${String(records.length + 1).padStart(2, "0")}`,
-      date: new Date().toLocaleString(),
-      waypoints: waypoints.length,
-      distance: missionDistance
-    };
-
-    setRecords((old) => [record, ...old]);
-  }, [
-    waypoints,
-    records.length,
-    missionDistance
-  ]);
+    setMissionSaveError("");
+    try {
+      let assessment = missionAssessment;
+      if (selectedDrone) {
+        assessment = await assessMission({
+          waypoints: waypoints.map(([lat, lon]) => ({ lat, lon })),
+          drone_id: selectedDrone.id,
+          payload_kg: 0,
+          reserve_percentage: 20
+        });
+        setMissionAssessment(assessment);
+      }
+      const result = await persistMission({
+        name: missionName.trim() || `Mission ${records.length + 1}`,
+        drone_id: selectedDrone?.id || null,
+        drone_name: selectedDrone?.name || null,
+        waypoints: waypoints.map(([lat, lon]) => ({ lat, lon })),
+        distance_km: missionDistance,
+        status: assessment?.mission_status?.toLowerCase() || "planned",
+        assessment
+      });
+      setRecords((old) => [result.mission, ...old]);
+    } catch (error) {
+      setMissionSaveError(error.message || "Could not save mission to the backend.");
+    }
+  }, [waypoints, missionDistance, missionAssessment, selectedDrone, missionName, records.length]);
 
   /* =====================================================
      PAGE ROUTER
@@ -2096,6 +2146,9 @@ export default function App() {
             <DroneFleet
               selectedDrone={selectedDrone}
               onSelectDrone={setSelectedDrone}
+              onFleetLoaded={(items) => {
+                setSelectedDrone((current) => current ? (items.find((item) => item.id === current.id) || current) : null);
+              }}
             />
           </div>
         );
@@ -2105,6 +2158,11 @@ export default function App() {
           <MissionPlanner
             waypoints={waypoints}
             setWaypoints={setWaypoints}
+            missionName={missionName}
+            setMissionName={setMissionName}
+            selectedDrone={selectedDrone}
+            missionAssessment={missionAssessment}
+            setMissionAssessment={setMissionAssessment}
             noFlyZones={noFlyZones}
             onNavigate={navigate}
           />
@@ -2126,7 +2184,7 @@ export default function App() {
                 generations: 250,
                 batteryCapacity:
                   selectedDrone?.battery_capacity_wh || 150,
-                energyPerKm: 25,
+                energyPerKm: selectedDrone?.energy_per_km_wh || 25,
                 batteryReserve: 20,
                 avoidNoFlyZones: true,
                 safetyMargin: 1
@@ -2229,10 +2287,7 @@ export default function App() {
 
       case "Mission History":
         return (
-          <MissionHistory
-            records={records}
-            onSave={saveMission}
-          />
+          <MissionHistory records={records} onSave={saveMission} error={missionSaveError} />
         );
 
       case "Administration":
