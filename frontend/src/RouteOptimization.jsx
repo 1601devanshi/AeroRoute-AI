@@ -30,6 +30,7 @@ import {
 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { planeIconMarkup } from "./mapIcons.js";
 
 import "./RouteOptimization.css";
 
@@ -66,9 +67,9 @@ const algorithmInfo = {
 
 const droneIcon = L.divIcon({
   className: "aeroroute-marker",
-  html: '<div class="aeroroute-marker-inner"></div>',
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
+  html: `<div class="aeroroute-marker-inner">${planeIconMarkup(16)}</div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
 });
 
 // --------------------------------------------------
