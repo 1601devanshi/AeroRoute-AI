@@ -10,13 +10,12 @@ import {
   AlertCircle
 } from "lucide-react";
 import "./DroneFleet.css";
-
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+import { getDroneFleet } from "../api.js";
 
 export default function DroneFleet({
   selectedDrone,
-  onSelectDrone
+  onSelectDrone,
+  onFleetLoaded
 }) {
   const [drones, setDrones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,21 +26,14 @@ export default function DroneFleet({
     setError("");
 
     try {
-      const response = await fetch(`${API_BASE}/api/drone/fleet`);
-
-      if (!response.ok) {
-        throw new Error(
-          `Fleet API error: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
+      const data = await getDroneFleet();
 
       if (!Array.isArray(data.drones)) {
         throw new Error("Invalid fleet response from backend.");
       }
 
       setDrones(data.drones);
+      onFleetLoaded?.(data.drones);
     } catch (err) {
       setError(err.message || "Unable to connect to the fleet API.");
     } finally {
