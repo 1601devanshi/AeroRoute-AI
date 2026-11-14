@@ -23,6 +23,7 @@ from app.optimization.algorithms import (
 from app.services.airspace import check_route_airspace
 from app.services.detours import generate_detour_route
 from app.services.battery import calculate_route_battery
+from app.services.mission_store import list_missions, save_mission
 
 
 # =========================================================
@@ -149,6 +150,17 @@ class WeatherRouteRequest(BaseModel):
     )
 
 
+class MissionRecordRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    drone_id: str | None = None
+    drone_name: str | None = None
+    waypoints: List[Waypoint] = Field(min_length=2, max_length=50)
+    distance_km: float = Field(ge=0)
+    status: str = "planned"
+    assessment: dict | None = None
+    telemetry: List[dict] = Field(default_factory=list)
+
+
 # =========================================================
 # DEMO RESTRICTED ZONES
 # These are simulated examples, not official restrictions.
@@ -221,6 +233,16 @@ def get_demo_no_fly_zones():
             "not official airspace restrictions."
         ),
     }
+
+
+@app.get("/api/missions")
+def get_missions():
+    return {"status": "success", "missions": list_missions()}
+
+
+@app.post("/api/missions")
+def create_mission(request: MissionRecordRequest):
+    return {"status": "success", "mission": save_mission(request.model_dump())}
 
 
 # =========================================================
