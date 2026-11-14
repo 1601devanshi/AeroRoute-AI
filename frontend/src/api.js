@@ -158,6 +158,14 @@ export async function getDroneFleet() {
   return getJSON("/api/drone/fleet");
 }
 
+export async function listMissions() {
+  return getJSON("/api/missions");
+}
+
+export async function saveMission(payload) {
+  return postJSON("/api/missions", payload);
+}
+
 // Get one drone's details
 export async function getDroneDetails(droneId) {
   if (!droneId) {
